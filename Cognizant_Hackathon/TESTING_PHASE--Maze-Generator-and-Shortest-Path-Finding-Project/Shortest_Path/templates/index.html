@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Route and AI Text Generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #e0f7fa; /* Light blue background */
+        }
+
+        h1 {
+            font-family: monospace;
+            color: #01579b; /* Dark blue for heading */
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 20px; /* Added gap between columns */
+        }
+
+        .form-container {
+            background-color: #b3e5fc; /* Light blue background */
+            color: #0277bd; /* Dark blue text */
+            padding: 20px;
+            width: 30%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: auto; /* Added to ensure overflow handling */
+        }
+
+        .map-container {
+            width: 145%; /* Adjusts to the remaining width */
+            overflow: hidden;
+        }
+
+        input[type="text"],
+        select {
+            width: calc(100% - 16px); /* Adjusted for padding and border */
+            padding: 8px;
+            margin: 5px 0;
+            background: #bbdefb; /* Light blue background for inputs and selects */
+            border-radius: 6px;
+            border: 1px solid #90caf9; /* Blue border */
+            color: #01579b; /* Dark blue text */
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border: 1px solid #0288d1; /* Darker blue border on focus */
+            background: #e3f2fd; /* Lighter blue background on focus */
+        }
+
+        input[type="submit"] {
+            background-color: #0288d1; /* Primary blue color */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0277bd; /* Darker blue on hover */
+        }
+
+        input[type="submit"]:active {
+            background-color: #01579b; /* Even darker blue on click */
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #01579b; /* Dark blue color for labels */
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #01579b; /* Dark blue text for paragraphs */
+        }
+
+        .info-container,
+        .result-container,
+        .places-container,
+        .traffic-volume-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #b3e5fc; /* Light blue background */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-container {
+            background-color: #e3f2fd; /* Lighter blue background */
+        }
+
+        .places-container {
+            background-color: #b3e5fc; /* Light blue background */
+        }
+
+        .traffic-volume-container {
+            background-color: #e3f2fd; /* Lighter blue background */
+        }
+
+        .places-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .places-container li {
+            padding: 5px 0;
+            border-bottom: 1px solid #90caf9;
+        }
+
+        .error-message {
+            color: #d32f2f; /* Red for errors */
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none; /* Utility class to hide elements */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Traffic Route and AI Text Generation</h1>
+            <form method="POST">
+                <label for="start_place">Starting Place:</label>
+                <input type="text" id="start_place" name="start_place" required>
+                <label for="end_place">Ending Place:</label>
+                <input type="text" id="end_place" name="end_place" required>
+                <label for="vehicle_type">Vehicle Type:</label>
+                <select name="vehicle_type" id="vehicle_type">
+                    <option value="car">Car</option>
+                    <option value="bicycle">Motor Bike</option>
+                    <option value="foot">Walking</option>
+                </select>
+                <label for="poi_type">Points of Interest:</label>
+                <select name="poi_type" id="poi_type">
+                    <option value="none">None</option>
+                    <option value="hospital">Hospital</option>
+                    <option value="gas_station">Petrol Pump</option>
+                    <option value="garage">Garage</option>
+                    <option value="parking">Parking Spot</option>
+                    <option value="warehouse">Warehouse</option>
+                    <option value="store">Store</option>
+                    <option value="depot">Depot</option>
+                    <option value="storage">Storage Facility</option>
+                    <option value="vehicle_repair">Vehicle Repair Shop</option>
+                </select>
+                <label for="prompt">AI Prompt:</label>
+                <input type="text" id="prompt" name="prompt" placeholder="Enter prompt for AI">
+                <input type="submit" value="Submit">
+            </form>
+
+            {% if duration %}
+            <p><strong>Estimated Travel Time:</strong> {{ duration }}</p>
+            {% endif %}
+            {% if start_location_name %}
+            <p><strong>Starting Location:</strong> {{ start_location_name }}</p>
+            {% else %}
+            <p class="error-message"></p>
+            {% endif %}
+            {% if end_location_name %}
+            <p><strong>Ending Location:</strong> {{ end_location_name }}</p>
+            {% else %}
+            <p class="error-message"></p>
+            {% endif %}
+        </div>
+
+        <div class="map-container">
+            {% if map_html %}
+            {{ map_html | safe }}
+            {% else %}
+            <p class="error-message"></p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="info-container">
+        {% if air_index %}
+        <p><strong>Air Quality Index:</strong> {{ air_index }}</p>
+        {% else %}
+        <p class="error-message">Error fetching air quality index.</p>
+        {% endif %}
+        {% if holiday_status %}
+        <p><strong>Holiday Status:</strong> {{ holiday_status }}</p>
+        {% else %}
+        <p class="error-message">Error checking holiday status.</p>
+        {% endif %}
+        {% if weekend_status %}
+        <p><strong>Weekend Status:</strong> {{ weekend_status }}</p>
+        {% else %}
+        <p class="error-message">Error checking weekend status.</p>
+        {% endif %}
+        {% if wind_direction %}
+        <p><strong>Wind Direction:</strong> {{ wind_direction }}</p>
+        {% else %}
+        <p class="error-message">Error fetching wind direction.</p>
+        {% endif %}
+        {% if temperature %}
+        <p><strong>Temperature:</strong> {{ temperature }}</p>
+        {% else %}
+        <p class="error-message">Error fetching temperature.</p>
+        {% endif %}
+        {% if humidity %}
+        <p><strong>Humidity:</strong> {{ humidity }}</p>
+        {% else %}
+        <p class="error-message">Error fetching humidity.</p>
+        {% endif %}
+    </div>
+
+    <div class="traffic-volume-container">
+        {% if predicted_traffic_volume %}
+        <p><strong>Predicted Traffic Volume:</strong> {{ predicted_traffic_volume }}</p>
+        {% else %}
+        <p class="error-message">Error predicting traffic volume.</p>
+        {% endif %}
+    </div>
+
+    <div class="places-container">
+        {% if places_of_interest %}
+        <h2>Places of Interest:</h2>
+        <ul>
+            {% for place in places_of_interest %}
+            <li>
+                <strong>{{ place.name }}</strong><br>
+                Latitude: {{ place.lat }}<br>
+                Longitude: {{ place.lon }}<br>
+                Address: {{ place.address }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No places of interest found along the route.</p>
+        {% endif %}
+    </div>
+
+    <div class="result-container">
+        {% if generated_text %}
+        <h2>AI Generated Text:</h2>
+        <p>{{ generated_text }}</p>
+        {% else %}
+        <p class="error-message">Error generating text.</p>
+        {% endif %}
+    </div>
+</body>
+
+</html>
